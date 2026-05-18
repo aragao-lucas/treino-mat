@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>premium</title>
+    <link rel="stylesheet" href="estilos.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+
+</head>
+<body>
+    <header class="page-header">
+        <h1>Premium</h1>
+        <p>Desafios especiais com perguntas de adição e subtração.</p>
+    </header>
+
+    <main class="grid">
+        <article class="card">
+            <h3>Quiz Premium</h3>
+            <p>Responda 10 perguntas combinando <strong>+ e -</strong>.</p>
+            <a id="premium-start" href="premium1.html">Começar</a>
+        </article>
+    </main>
+    <script src="auth.js" defer></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function(){
+        try{
+            if(typeof window.isAuthenticated === 'function' && !window.isAuthenticated()){
+                const a = document.getElementById('premium-start');
+                if(a){
+                    const next = encodeURIComponent('premium1.html');
+                    a.href = 'login.html?next=' + next;
+                    a.textContent = 'Entrar para acessar';
+                }
+            }
+        }catch(e){ /* ignore */ }
+    });
+    </script>
+</body>
+</html>
