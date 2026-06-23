@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>premium × e ÷ nível 2</title>
+    <link rel="stylesheet" href="estilos.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+</head>
+<body data-operation="premium_mul_div" data-level="2">
+    <div class="quiz-card">
+        <div class="quiz-info">
+            <div>
+                <h3>Quiz Premium × e ÷ - Nível 2</h3>
+                <div class="quiz-meta">Operação <span id="quizOperation"></span> · Nível <span id="quizLevel"></span></div>
+            </div>
+            <div class="score-wrapper">
+                <div class="quiz-score">Pontuação: <strong id="score">0 / 10</strong></div>
+                <div class="quiz-progress" id="progress">Pergunta 1 de 10</div>
+            </div>
+        </div>
+        <div class="quiz-question" id="question">Carregando a primeira pergunta...</div>
+        <input id="answer" type="number" placeholder="Digite a resposta" autocomplete="off" />
+        <button id="submit" type="button">Enviar resposta</button>
+        <div id="feedback"></div>
+    </div>
+    <script src="auth.js" defer></script>
+    <script src="quiz.js"></script>
+</body>
+</html>
