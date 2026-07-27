@@ -118,9 +118,22 @@ document.addEventListener("DOMContentLoaded", function() {
             questionText = `Quanto é ${a} × ${b} ÷ ${divisor}?`;
         } else {
             const divisorMin = Math.max(1, range.min);
-            const divisor = randomInt(divisorMin, range.max);
+            const desiredMinResult = level === 3 ? 2 : 1;
+            const possibleDivisors = [];
+
+            for (let candidateDivisor = divisorMin; candidateDivisor <= range.max; candidateDivisor += 1) {
+                const maxResult = Math.floor(range.max / candidateDivisor);
+                const minResult = Math.max(desiredMinResult, Math.ceil(range.min / candidateDivisor));
+                if (maxResult >= minResult) {
+                    possibleDivisors.push(candidateDivisor);
+                }
+            }
+
+            const divisor = possibleDivisors.length > 0
+                ? possibleDivisors[randomInt(0, possibleDivisors.length - 1)]
+                : randomInt(divisorMin, range.max);
             const maxResult = Math.max(1, Math.floor(range.max / divisor));
-            const minResult = Math.max(1, Math.ceil(range.min / divisor));
+            const minResult = Math.max(desiredMinResult, Math.ceil(range.min / divisor));
             const result = randomInt(minResult, maxResult);
             a = divisor * result;
             b = divisor;
@@ -218,11 +231,15 @@ document.addEventListener("DOMContentLoaded", function() {
             ? "✅ Resposta correta!"
             : `❌ Errado, a resposta certa é ${currentAnswer}.`;
 
+        const previousBestScore = highScore;
         if (score > highScore) {
             highScore = score;
             try{ localStorage.setItem(highScoreKey, String(highScore)); }catch(e){ /* ignore */ }
             if (highScoreEl) {
                 highScoreEl.textContent = `${highScore} / ${totalQuestions}`;
+            }
+            if (typeof window.addScore === 'function') {
+                try { window.addScore(score - previousBestScore); } catch(e) { /* ignore */ }
             }
             feedbackEl.textContent = `🎉 Novo recorde! Sua pontuação final é ${score} de ${totalQuestions}. ${finalAnswerMessage}`;
         } else {
@@ -244,9 +261,6 @@ document.addEventListener("DOMContentLoaded", function() {
             feedbackEl.textContent = "✅ Resposta correta!";
             score += 1;
             lastWasCorrect = true;
-            if (typeof window.addScore === 'function') {
-                try { window.addScore(1); } catch(e) { /* ignore */ }
-            }
         } else {
             feedbackEl.textContent = `❌ Errado, a resposta certa é ${currentAnswer}.`;
             lastWasCorrect = false;
