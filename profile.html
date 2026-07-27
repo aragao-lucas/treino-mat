@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Meu Perfil - Treinamentos</title>
+  <link rel="stylesheet" href="auth.css">
+  <script src="auth.js" defer></script>
+</head>
+<body>
+  <div class="auth-container">
+    <h2>Meu Perfil</h2>
+    <div id="profile-box">
+      <p><strong>Nome:</strong> <span id="p-name"></span></p>
+      <p><strong>E-mail:</strong> <span id="p-email"></span></p>
+      <p><strong>Score:</strong> <span id="p-score">0</span> <button id="btn-reset-score" class="btn secondary" type="button" style="margin-left:10px;">Redefinir score</button></p>
+    </div>
+
+    <h3>Editar perfil</h3>
+    <form id="profile-form">
+      <div class="auth-field">
+        <label for="name">Nome</label>
+        <input type="text" name="name" required>
+      </div>
+      <div class="auth-field">
+        <label for="password">Nova senha (deixe vazio para manter)</label>
+        <input type="password" name="password">
+      </div>
+      <div id="profile-msg" class="msg"></div>
+      <div style="display:flex; gap:10px; margin-top:12px">
+        <button class="btn" type="submit">Salvar</button>
+        <button id="btn-logout" class="btn secondary" type="button">Sair</button>
+      </div>
+    </form>
+    <div class="nav-links small">
+      <a href="index.html">Voltar à página inicial</a>
+    </div>
+  </div>
+</body>
+</html>
