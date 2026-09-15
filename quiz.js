@@ -13,6 +13,8 @@ document.addEventListener("DOMContentLoaded", function() {
     let currentAnswer = null;
     let lastWasCorrect = null;
     let divisionQuestionPool = [];
+    const divisionQuestionHistory = new Set();
+    let lastDivisionQuestion = null;
 
     const questionEl = document.getElementById("question");
     const scoreEl = document.getElementById("score");
@@ -73,6 +75,9 @@ document.addEventListener("DOMContentLoaded", function() {
             const minResult = Math.max(desiredMinResult, Math.ceil(range.min / divisor));
 
             for (let result = minResult; result <= maxResult; result += 1) {
+                if (result === 1) continue;
+                if (divisor === 1 && result > 5) continue;
+
                 pool.push({
                     a: divisor * result,
                     b: divisor,
@@ -92,6 +97,8 @@ document.addEventListener("DOMContentLoaded", function() {
     function makeQuestion() {
         if (operation === "div" && currentQuestion === 0) {
             divisionQuestionPool = buildDivisionQuestionPool();
+            divisionQuestionHistory.clear();
+            lastDivisionQuestion = null;
         }
 
         const range = getRange();
@@ -153,10 +160,33 @@ document.addEventListener("DOMContentLoaded", function() {
                 divisionQuestionPool = buildDivisionQuestionPool();
             }
 
-            const nextQuestion = divisionQuestionPool.pop();
+            const availableQuestions = divisionQuestionPool.filter(function(question) {
+                const isNewQuestion = !divisionQuestionHistory.has(`${question.a}/${question.b}`);
+                const changesNumbers = !lastDivisionQuestion
+                    || (question.a !== lastDivisionQuestion.a && question.b !== lastDivisionQuestion.b);
+                return isNewQuestion && changesNumbers;
+            });
+            const fallbackQuestions = divisionQuestionPool.filter(function(question) {
+                return !divisionQuestionHistory.has(`${question.a}/${question.b}`);
+            });
+            const questionOptions = availableQuestions.length > 0 ? availableQuestions : fallbackQuestions;
+            let nextQuestion = questionOptions[randomInt(0, questionOptions.length - 1)];
+
+            if (!nextQuestion) {
+                divisionQuestionPool = buildDivisionQuestionPool().filter(function(question) {
+                    return !divisionQuestionHistory.has(`${question.a}/${question.b}`);
+                });
+                nextQuestion = divisionQuestionPool.pop();
+            }
+
             a = nextQuestion.a;
             b = nextQuestion.b;
             currentAnswer = nextQuestion.answer;
+            divisionQuestionHistory.add(`${a}/${b}`);
+            divisionQuestionPool = divisionQuestionPool.filter(function(question) {
+                return question !== nextQuestion;
+            });
+            lastDivisionQuestion = { a, b };
             questionText = `Quanto é ${a} ÷ ${b}?`;
         }
 
