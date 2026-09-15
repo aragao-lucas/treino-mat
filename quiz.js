@@ -12,7 +12,6 @@ document.addEventListener("DOMContentLoaded", function() {
     let score = 0;
     let currentAnswer = null;
     let lastWasCorrect = null;
-    const usedDivisionQuestions = new Set();
     let divisionQuestionPool = [];
 
     const questionEl = document.getElementById("question");
@@ -63,9 +62,36 @@ document.addEventListener("DOMContentLoaded", function() {
         return { min: 100, max: 999 };
     }
 
+    function buildDivisionQuestionPool() {
+        const range = getRange();
+        const divisorMin = Math.max(1, range.min);
+        const desiredMinResult = level === 3 ? 2 : 1;
+        const pool = [];
+
+        for (let divisor = divisorMin; divisor <= range.max; divisor += 1) {
+            const maxResult = Math.max(1, Math.floor(range.max / divisor));
+            const minResult = Math.max(desiredMinResult, Math.ceil(range.min / divisor));
+
+            for (let result = minResult; result <= maxResult; result += 1) {
+                pool.push({
+                    a: divisor * result,
+                    b: divisor,
+                    answer: result
+                });
+            }
+        }
+
+        for (let index = pool.length - 1; index > 0; index -= 1) {
+            const swapIndex = randomInt(0, index);
+            [pool[index], pool[swapIndex]] = [pool[swapIndex], pool[index]];
+        }
+
+        return pool;
+    }
+
     function makeQuestion() {
-        if (operation === "div" && currentQuestion === 0 && usedDivisionQuestions.size > 0) {
-            usedDivisionQuestions.clear();
+        if (operation === "div" && currentQuestion === 0) {
+            divisionQuestionPool = buildDivisionQuestionPool();
         }
 
         const range = getRange();
@@ -123,40 +149,14 @@ document.addEventListener("DOMContentLoaded", function() {
             currentAnswer = product / divisor;
             questionText = `Quanto é ${a} × ${b} ÷ ${divisor}?`;
         } else {
-            const divisorMin = Math.max(1, range.min);
-            const desiredMinResult = level === 3 ? 2 : 1;
-
             if (divisionQuestionPool.length === 0) {
-                for (let divisor = divisorMin; divisor <= range.max; divisor += 1) {
-                    const maxResult = Math.max(1, Math.floor(range.max / divisor));
-                    const minResult = Math.max(desiredMinResult, Math.ceil(range.min / divisor));
-
-                    for (let result = minResult; result <= maxResult; result += 1) {
-                        divisionQuestionPool.push({
-                            a: divisor * result,
-                            b: divisor,
-                            answer: result
-                        });
-                    }
-                }
+                divisionQuestionPool = buildDivisionQuestionPool();
             }
 
-            const unusedQuestions = divisionQuestionPool.filter((question) => {
-                return !usedDivisionQuestions.has(`${question.a}/${question.b}`);
-            });
-
-            let nextQuestion;
-            if (unusedQuestions.length > 0) {
-                nextQuestion = unusedQuestions[randomInt(0, unusedQuestions.length - 1)];
-            } else {
-                usedDivisionQuestions.clear();
-                nextQuestion = divisionQuestionPool[randomInt(0, divisionQuestionPool.length - 1)];
-            }
-
+            const nextQuestion = divisionQuestionPool.pop();
             a = nextQuestion.a;
             b = nextQuestion.b;
             currentAnswer = nextQuestion.answer;
-            usedDivisionQuestions.add(`${a}/${b}`);
             questionText = `Quanto é ${a} ÷ ${b}?`;
         }
 
