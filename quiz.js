@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", function() {
     let score = 0;
     let currentAnswer = null;
     let lastWasCorrect = null;
+    const usedDivisionQuestions = new Set();
 
     const questionEl = document.getElementById("question");
     const scoreEl = document.getElementById("score");
@@ -129,15 +130,44 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             }
 
-            const divisor = possibleDivisors.length > 0
-                ? possibleDivisors[randomInt(0, possibleDivisors.length - 1)]
-                : randomInt(divisorMin, range.max);
-            const maxResult = Math.max(1, Math.floor(range.max / divisor));
-            const minResult = Math.max(desiredMinResult, Math.ceil(range.min / divisor));
-            const result = randomInt(minResult, maxResult);
-            a = divisor * result;
-            b = divisor;
-            currentAnswer = result;
+            let candidate = null;
+            const maxAttempts = 200;
+
+            for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+                const divisor = possibleDivisors.length > 0
+                    ? possibleDivisors[randomInt(0, possibleDivisors.length - 1)]
+                    : randomInt(divisorMin, range.max);
+                const maxResult = Math.max(1, Math.floor(range.max / divisor));
+                const minResult = Math.max(desiredMinResult, Math.ceil(range.min / divisor));
+                const result = randomInt(minResult, maxResult);
+                const generatedA = divisor * result;
+                const generatedB = divisor;
+                const questionKey = `${generatedA}/${generatedB}`;
+
+                if (!usedDivisionQuestions.has(questionKey)) {
+                    a = generatedA;
+                    b = generatedB;
+                    currentAnswer = result;
+                    usedDivisionQuestions.add(questionKey);
+                    candidate = true;
+                    break;
+                }
+            }
+
+            if (!candidate) {
+                usedDivisionQuestions.clear();
+                const divisor = possibleDivisors.length > 0
+                    ? possibleDivisors[randomInt(0, possibleDivisors.length - 1)]
+                    : randomInt(divisorMin, range.max);
+                const maxResult = Math.max(1, Math.floor(range.max / divisor));
+                const minResult = Math.max(desiredMinResult, Math.ceil(range.min / divisor));
+                const result = randomInt(minResult, maxResult);
+                a = divisor * result;
+                b = divisor;
+                currentAnswer = result;
+                usedDivisionQuestions.add(`${a}/${b}`);
+            }
+
             questionText = `Quanto é ${a} ÷ ${b}?`;
         }
 
