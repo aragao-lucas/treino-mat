@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", function() {
     let currentAnswer = null;
     let lastWasCorrect = null;
     const usedDivisionQuestions = new Set();
+    let divisionQuestionPool = [];
 
     const questionEl = document.getElementById("question");
     const scoreEl = document.getElementById("score");
@@ -63,6 +64,10 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function makeQuestion() {
+        if (operation === "div" && currentQuestion === 0 && usedDivisionQuestions.size > 0) {
+            usedDivisionQuestions.clear();
+        }
+
         const range = getRange();
         let a, b, questionText;
 
@@ -120,54 +125,38 @@ document.addEventListener("DOMContentLoaded", function() {
         } else {
             const divisorMin = Math.max(1, range.min);
             const desiredMinResult = level === 3 ? 2 : 1;
-            const possibleDivisors = [];
 
-            for (let candidateDivisor = divisorMin; candidateDivisor <= range.max; candidateDivisor += 1) {
-                const maxResult = Math.floor(range.max / candidateDivisor);
-                const minResult = Math.max(desiredMinResult, Math.ceil(range.min / candidateDivisor));
-                if (maxResult >= minResult) {
-                    possibleDivisors.push(candidateDivisor);
+            if (divisionQuestionPool.length === 0) {
+                for (let divisor = divisorMin; divisor <= range.max; divisor += 1) {
+                    const maxResult = Math.max(1, Math.floor(range.max / divisor));
+                    const minResult = Math.max(desiredMinResult, Math.ceil(range.min / divisor));
+
+                    for (let result = minResult; result <= maxResult; result += 1) {
+                        divisionQuestionPool.push({
+                            a: divisor * result,
+                            b: divisor,
+                            answer: result
+                        });
+                    }
                 }
             }
 
-            let candidate = null;
-            const maxAttempts = 200;
+            const unusedQuestions = divisionQuestionPool.filter((question) => {
+                return !usedDivisionQuestions.has(`${question.a}/${question.b}`);
+            });
 
-            for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-                const divisor = possibleDivisors.length > 0
-                    ? possibleDivisors[randomInt(0, possibleDivisors.length - 1)]
-                    : randomInt(divisorMin, range.max);
-                const maxResult = Math.max(1, Math.floor(range.max / divisor));
-                const minResult = Math.max(desiredMinResult, Math.ceil(range.min / divisor));
-                const result = randomInt(minResult, maxResult);
-                const generatedA = divisor * result;
-                const generatedB = divisor;
-                const questionKey = `${generatedA}/${generatedB}`;
-
-                if (!usedDivisionQuestions.has(questionKey)) {
-                    a = generatedA;
-                    b = generatedB;
-                    currentAnswer = result;
-                    usedDivisionQuestions.add(questionKey);
-                    candidate = true;
-                    break;
-                }
-            }
-
-            if (!candidate) {
+            let nextQuestion;
+            if (unusedQuestions.length > 0) {
+                nextQuestion = unusedQuestions[randomInt(0, unusedQuestions.length - 1)];
+            } else {
                 usedDivisionQuestions.clear();
-                const divisor = possibleDivisors.length > 0
-                    ? possibleDivisors[randomInt(0, possibleDivisors.length - 1)]
-                    : randomInt(divisorMin, range.max);
-                const maxResult = Math.max(1, Math.floor(range.max / divisor));
-                const minResult = Math.max(desiredMinResult, Math.ceil(range.min / divisor));
-                const result = randomInt(minResult, maxResult);
-                a = divisor * result;
-                b = divisor;
-                currentAnswer = result;
-                usedDivisionQuestions.add(`${a}/${b}`);
+                nextQuestion = divisionQuestionPool[randomInt(0, divisionQuestionPool.length - 1)];
             }
 
+            a = nextQuestion.a;
+            b = nextQuestion.b;
+            currentAnswer = nextQuestion.answer;
+            usedDivisionQuestions.add(`${a}/${b}`);
             questionText = `Quanto é ${a} ÷ ${b}?`;
         }
 
